@@ -603,9 +603,9 @@
 	
 	reg [1:0] state;
 
-	reg [63:0] DeviceFeatures = 1 << 32;	//VIRTIO_F_VERSION_1 (32)
+	reg [63:0] DeviceFeatures = 1 << 32;	//VIRTIO_F_VERSION_1 (32), VIRTIO_BLK_F_RO (5)
 	reg [31:0] DeviceFeaturesSel = 0;
-	reg [63:0] DriverFeatures = 0;//1 << 5;		//VIRTIO_BLK_F_RO (5)
+	reg [63:0] DriverFeatures = 0;
 	reg [31:0] DriverFeaturesSel = 0;
 	reg [31:0] QueueSel = 0;
 	reg [31:0] QueueNum = 0;
