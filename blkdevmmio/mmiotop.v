@@ -131,7 +131,7 @@
 	wire [31:0] VQ_DeviceLow;
 	wire DevReq;
 
-	blkporcessor # ( 
+	blkprocessor # ( 
 		.C_M_TARGET_SLAVE_BASE_ADDR(C_M_AXI_TARGET_SLAVE_BASE_ADDR),
 		.C_M_AXI_BURST_LEN(C_M_AXI_BURST_LEN),
 		.C_M_AXI_ID_WIDTH(C_M_AXI_ID_WIDTH),
