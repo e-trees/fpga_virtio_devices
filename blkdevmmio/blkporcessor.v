@@ -152,7 +152,6 @@
 
         output wire [31:0] Queue_ReadAddr,
         input wire [31:0] VQ_READY,
-        input wire [31:0] VQ_NOTIFY,
         input wire [31:0] VQ_DescLow,
         input wire [31:0] VQ_DriverLow,
         input wire [31:0] VQ_DeviceLow,

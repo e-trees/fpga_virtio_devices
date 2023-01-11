@@ -25,6 +25,8 @@
 		parameter integer C_M_AXI_BUSER_WIDTH	= 0
 	)
 	(
+		(* X_INTERFACE_PARAMETER = "SENSITIVITY EDGE_RISING, PortWidth 1" *)
+		(* X_INTERFACE_INFO = "xilinx.com:signal:interrupt:1.0 interrupt INTERRUPT" *)
 	    output wire interrupt,
 	
 		// Ports of Axi Slave Bus Interface S_AXI
@@ -124,7 +126,6 @@
 
 	wire [31:0] Queue_ReadAddr;
 	wire [31:0] VQ_READY;
-	wire [31:0] VQ_NOTIFY;
 	wire [31:0] VQ_DescLow;
 	wire [31:0] VQ_DriverLow;
 	wire [31:0] VQ_DeviceLow;
@@ -191,7 +192,6 @@
 
 		.Queue_ReadAddr(Queue_ReadAddr),
 		.VQ_READY(VQ_READY),
-		.VQ_NOTIFY(VQ_NOTIFY),
 		.VQ_DescLow(VQ_DescLow),
 		.VQ_DriverLow(VQ_DriverLow),
 		.VQ_DeviceLow(VQ_DeviceLow),
@@ -603,7 +603,7 @@
 	
 	reg [1:0] state;
 
-	reg [63:0] DeviceFeatures = 1 << 32;	//VIRTIO_F_VERSION_1 (32), VIRTIO_BLK_F_RO (5)
+	reg [63:0] DeviceFeatures = (1 << 32) | (1 << 33);	//VIRTIO_F_ACCESS_PLATFORM(33), VIRTIO_F_VERSION_1 (32), VIRTIO_BLK_F_RO (5)
 	reg [31:0] DeviceFeaturesSel = 0;
 	reg [63:0] DriverFeatures = 0;
 	reg [31:0] DriverFeaturesSel = 0;
@@ -619,27 +619,25 @@
 		[7] FAILED				
 	*/
 
+	reg [31:0] QueueNotify = 0;
 	reg [31:0] InterruptStatus = 0;
-
 
 	reg [31:0] DeviceStatus_tmp;
 	reg DeviceStatus_tmp_en;
 
-	reg  [31:0] Queue[0:(P_VirtQueueNum * 8) -1];
+	reg  [31:0] Queue[0:(P_VirtQueueNum * 7) -1];
 	/*	0 : Ready
-		1 : Notify
-		2 : Descriptor Low
-		3 : Descriptor High
-		4 : Driver(Avail) Low
-		5 : Driver(Avail) High
-		6 : Device(Used) Low
-		7 : Device(Used) High
+		1 : Descriptor Low
+		2 : Descriptor High
+		3 : Driver(Avail) Low
+		4 : Driver(Avail) High
+		5 : Device(Used) Low
+		6 : Device(Used) High
 	*/
-	assign VQ_READY = Queue[Queue_ReadAddr*8];
-	assign VQ_NOTIFY = Queue[Queue_ReadAddr*8 + 1];
-	assign VQ_DescLow = Queue[Queue_ReadAddr*8 + 2];
-	assign VQ_DriverLow = Queue[Queue_ReadAddr*8 + 4];
-	assign VQ_DeviceLow = Queue[Queue_ReadAddr*8 + 6];
+	assign VQ_READY = Queue[Queue_ReadAddr*7];
+	assign VQ_DescLow = Queue[Queue_ReadAddr*7 + 1];
+	assign VQ_DriverLow = Queue[Queue_ReadAddr*7 + 3];
+	assign VQ_DeviceLow = Queue[Queue_ReadAddr*7 + 5];
 
 	reg [1:0] DevReq_r;
 	assign DevReq = DevReq_r == 2'b01;
@@ -650,7 +648,7 @@
 
 	integer init_i;
 	initial begin
-        for(init_i=0;init_i<P_VirtQueueNum * 8;init_i=init_i+1) Queue[init_i] = 0;
+        for(init_i=0;init_i<P_VirtQueueNum * 7;init_i=init_i+1) Queue[init_i] = 0;
     end
 	// https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html#x1-1460002
 	always @( posedge axi_aclk )
@@ -670,22 +668,20 @@
 				32'h24	: DriverFeaturesSel <= S_AXI_WDATA;
 				32'h30	: QueueSel			<= S_AXI_WDATA;
 				32'h38	: QueueNum			<= S_AXI_WDATA;
-				32'h44	: Queue[QueueSel*8]	<= S_AXI_WDATA;//Ready
+				32'h44	: Queue[QueueSel*7]	<= S_AXI_WDATA;//Ready
 				32'h50	: begin
-					Queue[QueueSel*8+1] 	<= S_AXI_WDATA;//Notify
 					InterruptStatus <= InterruptStatus | 1;
 				end
 				32'h64	: begin
-					InterruptAck		<= S_AXI_WDATA;
-					InterruptStatus <= InterruptStatus & ~S_AXI_WDATA;
+					InterruptStatus <= InterruptStatus & ~S_AXI_WDATA;//Bit0 = 0
 				end
 				32'h70	: DeviceStatus_tmp	<= S_AXI_WDATA;
-				32'h80	: Queue[QueueSel*8+2]	<= S_AXI_WDATA;
-				32'h84	: Queue[QueueSel*8+3]	<= S_AXI_WDATA;
-				32'h90	: Queue[QueueSel*8+4]	<= S_AXI_WDATA;
-				32'h94	: Queue[QueueSel*8+5]	<= S_AXI_WDATA;
-				32'ha0	: Queue[QueueSel*8+6]	<= S_AXI_WDATA;
-				32'ha4	: Queue[QueueSel*8+7]	<= S_AXI_WDATA;
+				32'h80	: Queue[QueueSel*7+1]	<= S_AXI_WDATA;
+				32'h84	: Queue[QueueSel*7+2]	<= S_AXI_WDATA;
+				32'h90	: Queue[QueueSel*7+3]	<= S_AXI_WDATA;
+				32'h94	: Queue[QueueSel*7+4]	<= S_AXI_WDATA;
+				32'ha0	: Queue[QueueSel*7+5]	<= S_AXI_WDATA;
+				32'ha4	: Queue[QueueSel*7+6]	<= S_AXI_WDATA;
 				default : ;
 			endcase
 		end
@@ -702,7 +698,7 @@
 				32'hc   : axi_rdata <= P_VendorID;
 				32'h10  : axi_rdata <= (DeviceFeaturesSel == 0)? DeviceFeatures[31:0]: DeviceFeatures[63:32];
 				32'h34  : axi_rdata <= P_QueueNumMax;
-				32'h44  : axi_rdata <= Queue[QueueSel*8];
+				32'h44  : axi_rdata <= Queue[QueueSel*7];
 				32'h60  : axi_rdata <= InterruptStatus;
 				32'h70  : axi_rdata <= DeviceStatus;
 				32'hfc  : axi_rdata <= 32'h0;//ConfigGeneration;
