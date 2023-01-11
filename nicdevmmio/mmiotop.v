@@ -724,7 +724,7 @@
 	
 	reg [1:0] state;
 
-	reg [63:0] DeviceFeatures = 1 << 32 | 1 << 5;	//VIRTIO_F_VERSION_1 (32), VIRTIO_NET_F_MAC  (5)
+	reg [63:0] DeviceFeatures = 1 << 33 | 1 << 32 | 1 << 5;	//VIRTIO_F_ACCESS_PLATFORM(33), VIRTIO_F_VERSION_1 (32), VIRTIO_NET_F_MAC  (5)
 	reg [31:0] DeviceFeaturesSel = 0;
 	reg [63:0] DriverFeatures = 0;
 	reg [31:0] DriverFeaturesSel = 0;
