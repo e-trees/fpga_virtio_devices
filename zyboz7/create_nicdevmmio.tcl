@@ -20,7 +20,7 @@ set_property -name "xpm_libraries" -value "XPM_CDC XPM_FIFO XPM_MEMORY" -objects
 
 set source_files { \
   ../nicdevmmio/mmiotop.v \
-  ../nicdevmmio/nicporcessor_send.v \
+  ../nicdevmmio/nicprocessor_send.v \
   ../nicdevmmio/nicprocessor_recv.v \
   ../nicdevmmio/packetgen_conv.v \
   ../nicdevmmio/packetgensimple.v \

@@ -19,7 +19,7 @@ set_property -name "simulator_language" -value "Mixed" -objects $obj
 set_property -name "xpm_libraries" -value "XPM_CDC XPM_FIFO XPM_MEMORY" -objects $obj
 
 set source_files { \
- ../blkdevmmio/blkporcessor.v \
+ ../blkdevmmio/blkprocessor.v \
  ../blkdevmmio/mmiotop.v \
 }
 add_files -norecurse $source_files
