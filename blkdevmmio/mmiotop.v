@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 `default_nettype none
-	module mmiodev_top #
+	module blkmmio_top #
 	(
 		// Parameters of Axi Slave Bus Interface S_AXI
 		parameter integer C_S_AXI_ID_WIDTH	= 1,
